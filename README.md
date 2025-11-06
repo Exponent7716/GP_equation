@@ -27,6 +27,8 @@ where:
 
 - **1D Solver**: 1次元GP方程式ソルバー / One-dimensional GP equation solver
 - **2D Solver**: 2次元GP方程式ソルバー / Two-dimensional GP equation solver
+- **Finite Temperature**: ZNG理論による有限温度BEC / Finite temperature BEC with ZNG theory
+- **Bogoliubov-de Gennes**: 準粒子励起スペクトル / Quasi-particle excitation spectrum
 - **Split-Step Fourier Method**: 高速かつ正確な時間発展 / Fast and accurate time evolution
 - **Imaginary Time Evolution**: 基底状態探索 / Ground state finding
 - **Examples**: 調和ポテンシャル、ソリトン、渦など / Harmonic trap, solitons, vortices, etc.
@@ -129,6 +131,26 @@ python example_2d_vortex.py
 - `vortex_phase_2d.png` - 位相分布
 - `vortex_crosssection_2d.png` - 断面図
 
+#### 有限温度BEC / Finite Temperature BEC
+
+```bash
+python example_finite_temperature.py
+```
+
+このサンプルは以下を実行します / This example demonstrates:
+- ZNG理論による有限温度効果 / Finite temperature effects with ZNG theory
+- 凝縮成分と熱成分の結合ダイナミクス / Coupled dynamics of condensate and thermal cloud
+- Bogoliubov励起スペクトル / Bogoliubov excitation spectrum
+- 温度依存の凝縮率 / Temperature-dependent condensate fraction
+
+生成されるファイル / Generated files:
+- `thermal_equilibrium_temperatures.png` - 異なる温度での熱平衡
+- `condensate_fraction_vs_temperature.png` - 凝縮率の温度依存性
+- `thermal_dynamics_evolution.png` - 熱雲を含む時間発展
+- `thermal_dynamics_properties.png` - 粒子数の交換
+- `bogoliubov_spectrum.png` - 励起スペクトル
+- `bogoliubov_modes.png` - 準粒子モード
+
 ## クラスリファレンス / Class Reference
 
 ### GPSolver1D
@@ -153,6 +175,29 @@ python example_2d_vortex.py
 **主要メソッド / Main Methods:**
 
 同様のインターフェース（2D版） / Similar interface (2D version)
+
+### ZNGSolver1D
+
+有限温度BECソルバー（Zaremba-Nikuni-Griffin理論）/ Finite temperature BEC solver (ZNG theory)
+
+**主要メソッド / Main Methods:**
+
+- `set_potential(V)` - 外部ポテンシャルの設定 / Set external potential
+- `set_initial_state(psi0)` - 初期凝縮波動関数の設定 / Set initial condensate wave function
+- `update_thermal_cloud(n_modes)` - 熱雲密度の更新 / Update thermal cloud density
+- `evolve(t_total, dt)` - 時間発展（凝縮+熱雲） / Time evolution (condensate + thermal)
+- `find_thermal_equilibrium(max_iter, dt_imag, tol)` - 熱平衡状態探索 / Find thermal equilibrium
+- `compute_properties()` - 物理量計算（凝縮率、エネルギーなど） / Compute physical properties
+
+### BogoliubovSolver1D
+
+Bogoliubov-de Gennes準粒子励起ソルバー / Bogoliubov-de Gennes quasi-particle solver
+
+**主要メソッド / Main Methods:**
+
+- `solve_spectrum(n_modes)` - 励起スペクトル計算 / Solve excitation spectrum
+- `thermal_density(temperature)` - 熱雲密度計算 / Compute thermal cloud density
+- `condensate_fraction(temperature)` - 凝縮率計算 / Compute condensate fraction
 
 ## アルゴリズム / Algorithm
 
@@ -187,6 +232,38 @@ where:
 各ステップ後に規格化することで、最低エネルギー状態に収束します。
 By normalizing after each step, the wave function converges to the lowest energy state.
 
+### Zaremba-Nikuni-Griffin (ZNG) Theory
+
+有限温度では、凝縮成分と熱成分を分離して記述します:
+
+At finite temperature, we separate the condensate and thermal components:
+
+**凝縮成分 / Condensate:**
+```
+iℏ ∂ψ_c/∂t = [H_0 + 2g(n_c + 2ñ)]ψ_c - iR_{12}
+```
+
+**熱成分 / Thermal cloud:**
+- Bogoliubov-de Gennes準粒子で記述 / Described by Bogoliubov-de Gennes quasi-particles
+- 熱密度: ñ(x) = Σ_j n_j |v_j|² / Thermal density
+- n_j = 1/(exp(E_j/kT) - 1) (Bose-Einstein分布 / distribution)
+
+**衝突項 / Collision integral:**
+- R_{12}: 凝縮と熱成分の粒子・エネルギー交換 / Particle and energy exchange
+- 熱平衡への緩和を記述 / Describes relaxation to thermal equilibrium
+
+### Bogoliubov Excitation Spectrum
+
+準粒子励起エネルギー / Quasi-particle excitation energy:
+```
+E_k = √(ε_k(ε_k + 2gn₀))
+```
+
+where:
+- ε_k = ℏ²k²/2m + V (単粒子エネルギー / single-particle energy)
+- 低運動量極限: E_k ≈ ℏck (音速 / sound velocity c = √(gn₀/m))
+- 高運動量極限: E_k ≈ ℏ²k²/2m (自由粒子 / free particle)
+
 ## 物理的応用 / Physical Applications
 
 このソルバーは以下の物理現象のシミュレーションに使用できます:
@@ -205,6 +282,8 @@ This solver can be used to simulate:
 1. C.J. Pethick and H. Smith, "Bose-Einstein Condensation in Dilute Gases", Cambridge University Press (2008)
 2. L.P. Pitaevskii and S. Stringari, "Bose-Einstein Condensation and Superfluidity", Oxford University Press (2016)
 3. W. Bao and Y. Cai, "Mathematical theory and numerical methods for Bose-Einstein condensation", Kinetic and Related Models (2013)
+4. E. Zaremba, T. Nikuni, and A. Griffin, "Dynamics of Trapped Bose Gases at Finite Temperatures", J. Low Temp. Phys. 116, 277 (1999)
+5. N.P. Proukakis and B. Jackson, "Finite-temperature models of Bose-Einstein condensation", J. Phys. B 41, 203002 (2008)
 
 ## ライセンス / License
 
@@ -220,9 +299,13 @@ Created with Claude AI
 
 ## TODO / 今後の開発予定
 
+- [x] Finite temperature BEC (ZNG theory) / 有限温度BEC（ZNG理論）
+- [x] Bogoliubov excitation spectrum / Bogoliubov励起スペクトル
 - [ ] 3D solver implementation / 3次元ソルバーの実装
 - [ ] Rotating BEC / 回転BECのサポート
 - [ ] Multi-component BEC / 多成分BEC
+- [ ] 2D finite temperature / 2次元有限温度
+- [ ] Stochastic GP equation / 確率的GP方程式
 - [ ] GPU acceleration / GPU加速
 - [ ] Animation export / アニメーション出力機能
 - [ ] Jupyter notebook examples / Jupyterノートブック例
